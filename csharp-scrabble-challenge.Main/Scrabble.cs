@@ -17,8 +17,9 @@ namespace csharp_scrabble_challenge.Main
         {
             int score = 0;
             int multiplier = 1;
-            bool doubledActive = false;
-            bool tripledActive = false;
+            int doubledActive = 0;
+            int tripledActive = 0;
+            char lastchar = 'a';
            
             if (this._word.Equals("") || this._word.Equals(" \t\n"))
             {
@@ -27,25 +28,28 @@ namespace csharp_scrabble_challenge.Main
 
             foreach (char c in this._word)
             {
-                if (c.Equals('}') && !doubledActive) { return 0; }
-                if(c.Equals(']') && !tripledActive) { return 0; }
+                if (c.Equals('}') && doubledActive == 0) { return 0; }
+                if(c.Equals(']') && tripledActive == 0) { return 0; }
 
-                if (c.Equals('{')) { multiplier = multiplier * 2; doubledActive = true; }
-                if (c.Equals('[')) { multiplier = multiplier * 3; tripledActive = true; }
-                if (c.Equals('}') && doubledActive) { multiplier = multiplier / 2; doubledActive = false; }
-                if (c.Equals(']') && tripledActive) { multiplier = multiplier / 3; tripledActive = false; }
+                if (c.Equals('{')) { multiplier = multiplier * 2; doubledActive++; }
+                if (c.Equals('[')) { multiplier = multiplier * 3; tripledActive++; }
+                if (c.Equals('}') && doubledActive > 0) { multiplier = multiplier / 2; doubledActive--; }
+                if (c.Equals(']') && tripledActive > 0) { multiplier = multiplier / 3; tripledActive--; }
 
                 if (this._scoreDict.ContainsKey(c))
                 {
                     score += this._scoreDict[c] * multiplier;
                 }
-                else if (!"{}[]".Contains(c))
+                else if(!"{}[]".Contains(c))
                 {
                     return 0;
                 }
+                if (c.Equals('}') && lastchar == '{') { return 0; }
+                if (c.Equals(']') && lastchar == '[') { return 0; }
+                lastchar = c;
             }
 
-            if (doubledActive || tripledActive) { return 0; }
+            if (doubledActive > 0 || tripledActive > 0) { return 0; }
             return score;
         }
 
